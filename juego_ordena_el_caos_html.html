@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ordena el Caos</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #dff3e3, #f3fff5);
+      color: #243b2f;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 950px;
+      background: white;
+      border-radius: 22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      padding: 28px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2f6b4f;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #5a7567;
+      margin-bottom: 24px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .info-card {
+      flex: 1;
+      min-width: 160px;
+      background: #edf8ef;
+      border: 1px solid #cfe8d5;
+      padding: 14px;
+      border-radius: 14px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .timer {
+      font-size: 1.5rem;
+      color: #276749;
+    }
+
+    .timer.warning {
+      color: #b45309;
+    }
+
+    .timer.danger {
+      color: #b91c1c;
+    }
+
+    .round-box {
+      background: #f8fffa;
+      border: 2px solid #d8efdd;
+      border-radius: 18px;
+      padding: 22px;
+      margin-bottom: 20px;
+    }
+
+    .round-title {
+      color: #2f6b4f;
+      margin-top: 0;
+    }
+
+    .instructions {
+      background: #fff8dc;
+      border-left: 6px solid #eab308;
+      padding: 12px 15px;
+      border-radius: 10px;
+      margin-bottom: 18px;
+    }
+
+    .clues {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .clue {
+      background: #eef7f0;
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid #cce6d2;
+    }
+
+    .answer-area {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-top: 15px;
+    }
+
+    .position-box {
+      background: #ffffff;
+      border: 2px solid #d1e7d8;
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #335c45;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #aacbb4;
+      font-size: 1rem;
+      background: white;
+    }
+
+    .correct {
+      border-color: #16a34a !important;
+      background: #ecfdf3 !important;
+    }
+
+    .incorrect {
+      border-color: #dc2626 !important;
+      background: #fef2f2 !important;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 22px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.03);
+    }
+
+    .primary {
+      background: #2f855a;
+      color: white;
+    }
+
+    .secondary {
+      background: #d9f2df;
+      color: #22543d;
+    }
+
+    .danger-btn {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .feedback {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 12px;
+      display: none;
+    }
+
+    .feedback.success {
+      display: block;
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #166534;
+    }
+
+    .feedback.error {
+      display: block;
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+    }
+
+    .feedback.info {
+      display: block;
+      background: #e0f2fe;
+      border: 1px solid #7dd3fc;
+      color: #075985;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .result-screen {
+      text-align: center;
+      padding: 30px;
+    }
+
+    .score {
+      font-size: 2.4rem;
+      color: #2f855a;
+      margin: 18px 0;
+    }
+
+    .explanation {
+      background: #f1f8f3;
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 15px;
+      text-align: left;
+      border: 1px solid #cce6d2;
+    }
+  </style>
+</head>
+<body>
+  <main class="game-container">
+    <h1>📂 Ordena el Caos</h1>
+    <p class="subtitle">Juego virtual para estimular el pensamiento lógico, la memoria de trabajo y la resolución de problemas.</p>
+
+    <section id="startScreen">
+      <div class="round-box">
+        <h2 class="round-title">¿Cómo se juega?</h2>
+        <p>Lee las pistas de cada ronda y organiza los elementos en el orden correcto. Tendrás <strong>3 minutos por ronda</strong>.</p>
+        <p>Al revisar tu respuesta, el juego marcará en <strong>verde</strong> lo correcto y en <strong>rojo</strong> dónde te equivocaste.</p>
+        <p>Consta de <strong>3 rondas</strong>: personas en pisos, horarios de actividades y orden de prioridades.</p>
+      </div>
+      <div class="buttons">
+        <button class="primary" onclick="startGame()">Comenzar juego</button>
+      </div>
+    </section>
+
+    <section id="gameScreen" class="hidden">
+      <div class="top-bar">
+        <div class="info-card">Ronda: <span id="roundNumber">1</span> / 3</div>
+        <div class="info-card">Puntaje: <span id="score">0</span></div>
+        <div class="info-card timer" id="timer">03:00</div>
+      </div>
+
+      <div class="round-box">
+        <h2 id="roundTitle" class="round-title"></h2>
+        <div class="instructions" id="roundInstructions"></div>
+        <div class="clues" id="clues"></div>
+        <h3>Organiza tu respuesta:</h3>
+        <div class="answer-area" id="answerArea"></div>
+        <div id="feedback" class="feedback"></div>
+      </div>
+
+      <div class="buttons">
+        <button class="primary" onclick="checkAnswers()">Revisar respuesta</button>
+        <button class="secondary" onclick="nextRound()">Siguiente ronda</button>
+        <button class="danger-btn" onclick="restartGame()">Reiniciar</button>
+      </div>
+    </section>
+
+    <section id="resultScreen" class="hidden result-screen">
+      <h2>🎉 Juego terminado</h2>
+      <p>Tu puntaje final fue:</p>
+      <div class="score"><span id="finalScore">0</span> / 15</div>
+      <p id="finalMessage"></p>
+      <div class="explanation">
+        <h3>Área cognitiva estimulada</h3>
+        <p>Este juego trabaja el razonamiento lógico, la memoria de trabajo, la atención y la resolución de problemas de ordenación. El participante debe analizar pistas, comparar relaciones y llegar a una respuesta organizada.</p>
+      </div>
+      <div class="buttons">
+        <button class="primary" onclick="restartGame()">Volver a jugar</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const rounds = [
+      {
+        title: "Ronda 1: Los pisos del edificio",
+        instructions: "Cinco personas viven en pisos distintos. El piso 1 es el más bajo y el piso 5 es el más alto.",
+        labels: ["Piso 1", "Piso 2", "Piso 3", "Piso 4", "Piso 5"],
+        options: ["Ana", "Luis", "Marta", "Pedro", "Sofía"],
+        answer: ["Luis", "Pedro", "Marta", "Ana", "Sofía"],
+        clues: [
+          "Ana vive arriba de Marta.",
+          "Luis vive en el primer piso.",
+          "Pedro vive justo debajo de Marta.",
+          "Sofía vive en el piso más alto.",
+          "Marta vive en el piso 3."
+        ]
+      },
+      {
+        title: "Ronda 2: Ordena la agenda",
+        instructions: "Organiza las actividades según el horario correcto, desde la primera hasta la última.",
+        labels: ["1.º", "2.º", "3.º", "4.º", "5.º"],
+        options: ["Desayuno", "Reunión", "Informe", "Almuerzo", "Presentación"],
+        answer: ["Desayuno", "Reunión", "Informe", "Almuerzo", "Presentación"],
+        clues: [
+          "El desayuno fue antes de todo.",
+          "La reunión ocurrió después del desayuno.",
+          "El informe se realizó antes del almuerzo.",
+          "La presentación fue la última actividad.",
+          "El almuerzo ocurrió después del informe."
+        ]
+      },
+      {
+        title: "Ronda 3: Prioridades de emergencia",
+        instructions: "Ordena las acciones según la prioridad más lógica en una situación de emergencia sencilla.",
+        labels: ["Prioridad 1", "Prioridad 2", "Prioridad 3", "Prioridad 4", "Prioridad 5"],
+        options: ["Mantener la calma", "Identificar el problema", "Pedir ayuda", "Aplicar solución", "Evaluar resultado"],
+        answer: ["Mantener la calma", "Identificar el problema", "Pedir ayuda", "Aplicar solución", "Evaluar resultado"],
+        clues: [
+          "Antes de actuar, es importante mantener la calma.",
+          "No se puede solucionar algo sin identificar primero el problema.",
+          "Pedir ayuda va antes de aplicar la solución si la situación lo requiere.",
+          "La solución se aplica después de comprender el problema.",
+          "El resultado se evalúa al final."
+        ]
+      }
+    ];
+
+    let currentRound = 0;
+    let score = 0;
+    let timeLeft = 180;
+    let timerInterval;
+    let answered = false;
+
+    function startGame() {
+      document.getElementById("startScreen").classList.add("hidden");
+      document.getElementById("gameScreen").classList.remove("hidden");
+      loadRound();
+    }
+
+    function loadRound() {
+      answered = false;
+      clearInterval(timerInterval);
+      timeLeft = 180;
+      updateTimer();
+      timerInterval = setInterval(countdown, 1000);
+
+      const round = rounds[currentRound];
+      document.getElementById("roundNumber").textContent = currentRound + 1;
+      document.getElementById("score").textContent = score;
+      document.getElementById("roundTitle").textContent = round.title;
+      document.getElementById("roundInstructions").textContent = round.instructions;
+      document.getElementById("feedback").className = "feedback";
+      document.getElementById("feedback").textContent = "";
+
+      const cluesContainer = document.getElementById("clues");
+      cluesContainer.innerHTML = "";
+      round.clues.forEach(clue => {
+        const clueDiv = document.createElement("div");
+        clueDiv.className = "clue";
+        clueDiv.textContent = "• " + clue;
+        cluesContainer.appendChild(clueDiv);
+      });
+
+      const answerArea = document.getElementById("answerArea");
+      answerArea.innerHTML = "";
+
+      round.labels.forEach((label, index) => {
+        const box = document.createElement("div");
+        box.className = "position-box";
+        box.id = "box-" + index;
+
+        const labelElement = document.createElement("label");
+        labelElement.textContent = label;
+
+        const select = document.createElement("select");
+        select.id = "select-" + index;
+
+        const emptyOption = document.createElement("option");
+        emptyOption.value = "";
+        emptyOption.textContent = "Selecciona...";
+        select.appendChild(emptyOption);
+
+        round.options.forEach(option => {
+          const optionElement = document.createElement("option");
+          optionElement.value = option;
+          optionElement.textContent = option;
+          select.appendChild(optionElement);
+        });
+
+        box.appendChild(labelElement);
+        box.appendChild(select);
+        answerArea.appendChild(box);
+      });
+    }
+
+    function countdown() {
+      timeLeft--;
+      updateTimer();
+
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        if (!answered) {
+          markAnswers(false);
+          showFeedback("Se acabó el tiempo. Observa en rojo las respuestas incorrectas y en verde las correctas.", "error");
+          answered = true;
+        }
+      }
+    }
+
+    function updateTimer() {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      const timer = document.getElementById("timer");
+      timer.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      timer.className = "info-card timer";
+      if (timeLeft <= 60) timer.classList.add("warning");
+      if (timeLeft <= 20) timer.classList.add("danger");
+    }
+
+    function checkAnswers() {
+      if (answered) {
+        showFeedback("Ya revisaste esta ronda. Puedes pasar a la siguiente.", "info");
+        return;
+      }
+
+      clearInterval(timerInterval);
+      const correctCount = markAnswers(true);
+      score += correctCount;
+      document.getElementById("score").textContent = score;
+      answered = true;
+
+      if (correctCount === 5) {
+        showFeedback("¡Excelente! Organizaste todo correctamente.", "success");
+      } else {
+        showFeedback(`Obtuviste ${correctCount} de 5 respuestas correctas. Las casillas rojas indican dónde te equivocaste.`, "error");
+      }
+    }
+
+    function markAnswers(countScore) {
+      const round = rounds[currentRound];
+      let correctCount = 0;
+
+      round.answer.forEach((correctAnswer, index) => {
+        const box = document.getElementById("box-" + index);
+        const select = document.getElementById("select-" + index);
+        box.classList.remove("correct", "incorrect");
+
+        if (select.value === correctAnswer) {
+          box.classList.add("correct");
+          correctCount++;
+        } else {
+          box.classList.add("incorrect");
+          if (!select.value) {
+            select.title = "No seleccionaste respuesta.";
+          } else {
+            select.title = `Respuesta correcta: ${correctAnswer}`;
+          }
+        }
+
+        select.disabled = true;
+      });
+
+      return countScore ? correctCount : 0;
+    }
+
+    function showFeedback(message, type) {
+      const feedback = document.getElementById("feedback");
+      feedback.textContent = message;
+      feedback.className = "feedback " + type;
+    }
+
+    function nextRound() {
+      if (!answered) {
+        showFeedback("Primero revisa tu respuesta antes de continuar.", "info");
+        return;
+      }
+
+      currentRound++;
+      if (currentRound >= rounds.length) {
+        endGame();
+      } else {
+        loadRound();
+      }
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      document.getElementById("gameScreen").classList.add("hidden");
+      document.getElementById("resultScreen").classList.remove("hidden");
+      document.getElementById("finalScore").textContent = score;
+
+      let message = "";
+      if (score >= 13) {
+        message = "Excelente desempeño. Mostraste muy buen razonamiento lógico y organización mental.";
+      } else if (score >= 8) {
+        message = "Buen trabajo. Puedes mejorar revisando mejor cada pista antes de decidir.";
+      } else {
+        message = "Sigue practicando. Lo importante es analizar las pistas con calma y relacionarlas paso a paso.";
+      }
+
+      document.getElementById("finalMessage").textContent = message;
+    }
+
+    function restartGame() {
+      clearInterval(timerInterval);
+      currentRound = 0;
+      score = 0;
+      answered = false;
+      document.getElementById("resultScreen").classList.add("hidden");
+      document.getElementById("gameScreen").classList.add("hidden");
+      document.getElementById("startScreen").classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>
